@@ -87,6 +87,8 @@ ck   grep   grep   /tmp/xc_words.txt banana
 ck_in grep  grep   "$(printf 'hello\nworld\n')" hello
 ck   sort   sort   /tmp/xc_nums.txt -n
 ck   sort   sort   /tmp/xc_nums.txt
+# stability: equal numeric keys must keep input order (GNU sort is stable)
+ck_in sort sort "$(printf '3 b\n1 a\n3 a\n2 c\n1 b')" -n
 ck   uniq   uniq   /tmp/xc_words.txt -c
 ck   uniq   uniq   /tmp/xc_words.txt -d
 ck   cut    cut    /tmp/xc_csv.txt -c1-2
