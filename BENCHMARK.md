@@ -1,0 +1,47 @@
+# xlang-linux — Performance vs GNU coreutils
+
+All numbers from `wzu` (10.132.218.11, 64-core Ubuntu 22.04). xlang compiled `.x → C (-O2)`. Each tool verified **byte-identical** to its GNU counterpart before timing.
+
+## Large-scale stress test (the headline)
+
+`tr -d` and `base64` on 100k–1M generated lines. These two uncovered and then fixed xlang's worst performance traps.
+
+| tool (1M lines) | xlang | GNU | ratio |
+|---|---|---|---|
+| `tr -d aeiou`   | 106 ms | 20 ms | 5.3× |
+| `base64`        |  74 ms | 16 ms | 4.6× |
+
+Both outputs `diff`-identical to GNU.
+
+## The three fixes (each was a 10–1000× trap)
+
+Discovered by stress-testing at 100k lines. Each was a genuine **O(n²)** in the xlang runtime, not the algorithm.
+
+1. **`str_concat` accumulation is O(n²).** `base64` built output one piece at a time with `str_concat(out, piece)`, copying the whole output each call → **114 s @100k**.
+   → Added **StringBuilder builtins** (`sb_new` / `sb_push` / `sb_str`): a global growable buffer, O(1) amortized append.
+
+2. **`str_slice` called `strlen` on every invocation.** `tr -d` sliced one char at a time off the giant input string; each `str_slice(s,i,i+1)` ran `strlen(s)` (the whole string) for a bounds clamp → **163 s @100k**.
+   → Dropped the clamp; `memcpy(out, s+start, end-start)` needs no length.
+
+3. **Per-element malloc.** Even O(n), `str_slice`/`sb_push(str)` allocated a fresh heap string per char/digit; GNU works in-place in one buffer → still 13–18× slower.
+   → Added **`sb_push_char(int)`**: append one byte, zero allocation. Rewrote `tr -d` and `base64` to push chars directly.
+
+### Cumulative effect on `tr -d` @100k
+
+```
+163 000 ms   (str_slice strlen trap)
+      132 ms   (StringBuilder + drop strlen clamp)
+       26 ms   (sb_push_char — zero per-char alloc)
+```
+A **~6 000× speedup**, ending within 3× of GNU.
+
+## Pipeline benchmark
+
+A typical text-processing pipeline (`cat | grep | sort | uniq | wc`) on 10k lines runs at **~1.3× GNU** end-to-end — competitive.
+
+## Methodology
+
+- Inputs generated with `seq | while read`.
+- Timed with `date +%s%N` around the pipeline.
+- Correctness gated first: `diff <(xlang…) <(gnu…)` must be empty (base64 compared against `base64 -w0` with trailing newline stripped).
+- The xlang compiler itself is rebuilt on the server (`cargo build --release`); generated C compiled with `cc -O2`.
