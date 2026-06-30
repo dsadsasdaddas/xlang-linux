@@ -1,6 +1,6 @@
 # xlang-linux — Linux userland replication in X Language
 
-**83 coreutils + a shell**, all written in [xlang](https://github.com/dsadsasdaddas/xlang), compiled to C, verified against GNU on a Linux server.
+**84 coreutils + a shell**, all written in [xlang](https://github.com/dsadsasdaddas/xlang), compiled to C, verified against GNU on a Linux server.
 
 ## Coreutils
 
