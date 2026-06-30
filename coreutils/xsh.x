@@ -66,7 +66,7 @@ fn run_pipeline(stages: Vec<String>): i32 {
                 dup2(pipe_w_at(k), 1)
             }
             close_all_pipes(npipes)
-            exec_sh(stages[k])
+            exec_split(stages[k])
             return 1
         }
         k = k + 1
@@ -119,7 +119,7 @@ fn run_one(cmd: String): i32 {
             dup2(fdo, 1)
             close_fd(fdo)
         }
-        exec_sh(core)
+        exec_split(core)
         return 1
     }
     wait_child()

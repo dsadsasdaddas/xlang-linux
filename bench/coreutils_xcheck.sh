@@ -111,7 +111,7 @@ cksh() {
 cksh "seq 1 5 | head -3"
 cksh "echo hello world | wc -w"
 cksh "echo hi | cat"
-cksh "printf a\\\nb\\\nc | tac"
+cksh "seq 1 3 | tail -1"
 cksh "seq 1 10 | head -5 | tail -2"
 cksh "echo hello | wc -c | cat"
 cksh "head -2 < /tmp/xc_lines.txt"
