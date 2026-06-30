@@ -131,6 +131,9 @@ cksh "export K=v; echo set"
 cksh "if true; then echo yes; fi"
 cksh "if false; then echo yes; fi"
 cksh "while false; do echo x; done"
+cksh "if [ 3 -lt 5 ]; then echo yes; fi"
+cksh "if [ 5 -lt 3 ]; then echo no; fi"
+cksh "if [ abc = abc ]; then echo same; fi"
 # NOTE: `wc` (all counts), `nl`, `od` omitted — correct data but simplified
 # output format vs GNU (column padding / hex-vs-octal), not data bugs.
 
