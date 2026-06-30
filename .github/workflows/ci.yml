@@ -23,37 +23,21 @@ jobs:
         run: cargo build --release
         working-directory: /tmp/xlang
 
-      - name: Compile every coreutil (.x -> C -> object)
+      - name: Compile every coreutil (.x -> C -> executable)
         run: |
           set -e
           XLANGC=/tmp/xlang/target/release/xlangc
-          mkdir -p build
+          mkdir -p build bin
           pass=0
           for f in coreutils/*.x; do
             stem=$(basename "$f" .x)
             "$XLANGC" c "$f"
-            cc -O2 -c "build/$stem.c" -o "build/$stem.o"
+            cc -O2 -o "bin/$stem" "build/$stem.c"
             pass=$((pass + 1))
           done
-          echo "::notice::compiled $pass coreutils (.x -> C -> object) OK"
+          echo "::notice::compiled $pass coreutils (.x -> C -> executable) OK"
 
-      - name: Smoke-test coreutils (correctness regression)
+      - name: Cross-check coreutils vs GNU (correctness regression)
         run: |
-          set -e
-          XLANGC=/tmp/xlang/target/release/xlangc
-          check() {
-            local name="$1" expected="$2"; shift 2
-            local got
-            got=$("$XLANGC" run "coreutils/$name.x" "$@")
-            if [ "$got" = "$expected" ]; then
-              echo "PASS $name -> '$got'"
-            else
-              echo "::error::$name: expected '$expected' got '$got'"
-              exit 1
-            fi
-          }
-          check echo   "hello world"  hello world
-          check seq    "$(seq 1 5)"  1 5
-          check basename "foo.txt"    /a/b/foo.txt
-          check dirname  "/a/b"       /a/b/foo.txt
-          echo "::notice::coreutils smoke tests passed"
+          bash bench/coreutils_xcheck.sh "$PWD/bin"
+          echo "::notice::coreutils cross-check vs GNU passed"
