@@ -9,7 +9,7 @@ uncovered and then fixed xlang's worst performance traps.
 
 | tool (1M lines) | xlang | GNU | ratio |
 |---|---|---|---|
-| `tr -d aeiou`   |  78 ms |  17 ms | 4.6× |
+| `tr -d aeiou`   |  58 ms |  24 ms | 2.4× |
 | `base64`        |  59 ms |  14 ms | 4.2× |
 | `base64 -d`     | 124 ms |  67 ms | 1.85× |
 
@@ -33,14 +33,18 @@ Discovered by stress-testing at 100k lines. Each was a genuine **O(n²)** in the
 3. **Per-element malloc.** Even O(n), `str_slice`/`sb_push(str)` allocated a fresh heap string per char/digit; GNU works in-place in one buffer → still 13–18× slower.
    → Added **`sb_push_char(int)`**: append one byte, zero allocation. Rewrote `tr -d` and `base64` to push chars directly.
 
-### Cumulative effect on `tr -d` @100k
+4. **Linear set scan.** `tr -d` checked each char against the delete set with an O(|set|) inner loop.
+   → Built a **256-entry `Vec<i32>` lookup table** (xlang generics work for `i32`, not just `String`): O(1) per-char membership.
+
+### Cumulative effect on `tr -d` @1M lines
 
 ```
-163 000 ms   (str_slice strlen trap)
-      132 ms   (StringBuilder + drop strlen clamp)
-       26 ms   (sb_push_char — zero per-char alloc)
+163 000 ms   (str_slice strlen trap)        — vs GNU ~24 ms
+      132 ms   (StringBuilder + drop strlen clamp)   @100k
+       78 ms   (sb_push_char — zero per-char alloc)  @1M
+       58 ms   (Vec<i32> lookup table)               @1M, 2.4× GNU
 ```
-A **~6 000× speedup**, ending within 3× of GNU.
+A **~2 800× speedup**, ending within 2.4× of GNU.
 
 ## Pipeline benchmark
 
