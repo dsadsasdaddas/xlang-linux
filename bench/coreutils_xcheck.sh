@@ -94,6 +94,8 @@ ck   uniq   uniq   /tmp/xc_words.txt -d
 ck   cut    cut    /tmp/xc_csv.txt -c1-2
 ck   cut    cut    /tmp/xc_csv.txt -c2
 ck   expand expand /tmp/xc_tabs.txt
+ck   sed    sed    /tmp/xc_words.txt s/a/X/g
+ck   sed    sed    /tmp/xc_csv.txt -n 2p
 ck   comm   comm   /tmp/xc_f1.txt /tmp/xc_f2.txt
 ck_in rev   rev    "hello"
 ck_in rev   rev    "abcde"
