@@ -117,6 +117,7 @@ cksh "seq 1 3 | tail -1"
 cksh "seq 1 10 | head -5 | tail -2"
 cksh "echo hello | wc -c | cat"
 cksh "head -2 < /tmp/xc_lines.txt"
+cksh "for x in a b c; do echo iter; done"
 # semicolon + assignment + export (no literal $ so the harness bash doesn't expand)
 cksh "echo a; echo b"
 cksh "X=1; Y=2; echo done"
