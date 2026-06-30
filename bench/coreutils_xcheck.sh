@@ -96,9 +96,15 @@ ck   cut    cut    /tmp/xc_csv.txt -c2
 ck   expand expand /tmp/xc_tabs.txt
 ck   sed    sed    /tmp/xc_words.txt s/a/X/g
 ck   awk    awk    /tmp/xc_lines.txt "{print NR}"
+ck_in printf printf "" "%s" hello
+ck_in printf printf "" "%d" 42
+ck_in printf printf "" "%x" 255
 ck   awk    awk    /tmp/xc_words.txt "NR==2{print}"
 ck   sed    sed    /tmp/xc_csv.txt -n 2p
 ck   awk    awk    /tmp/xc_lines.txt "{print NR}"
+ck_in printf printf "" "%s" hello
+ck_in printf printf "" "%d" 42
+ck_in printf printf "" "%x" 255
 ck   awk    awk    /tmp/xc_words.txt "NR==2{print}"
 ck   comm   comm   /tmp/xc_f1.txt /tmp/xc_f2.txt
 ck_in rev   rev    "hello"
