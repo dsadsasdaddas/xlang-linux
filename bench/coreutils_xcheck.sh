@@ -98,6 +98,20 @@ ck_in rev   rev    "abcde"
 ck   tac    tac    /tmp/xc_lines.txt
 # tac on stdin without a trailing newline differs from GNU (quirky separator
 # semantics) — omitted; the file-based case above covers tac's core behavior.
+
+# ---- xsh shell: pipelines + redirects vs bash ----
+cksh() {
+  local cmds="$1"
+  local xo go
+  xo=$(printf "%s\n" "$cmds" | "${XB}/xsh" 2>/dev/null)
+  go=$(printf "%s\n" "$cmds" | bash 2>/dev/null)
+  if [ "$xo" = "$go" ]; then PASS=$((PASS+1)); else
+    FAIL=$((FAIL+1)); echo "FAIL xsh <<$cmds"; echo "  xlang: $xo"; echo "  bash : $go"; fi
+}
+cksh "seq 1 5 | head -3"
+cksh "echo hello world | wc -w"
+cksh "echo hi | cat"
+cksh "printf a\\\nb\\\nc | tac"
 # NOTE: `wc` (all counts), `nl`, `od` omitted — correct data but simplified
 # output format vs GNU (column padding / hex-vs-octal), not data bugs.
 
