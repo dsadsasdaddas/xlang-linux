@@ -4,14 +4,21 @@ All numbers from `wzu` (10.132.218.11, 64-core Ubuntu 22.04). xlang compiled `.x
 
 ## Large-scale stress test (the headline)
 
-`tr -d` and `base64` on 100k–1M generated lines. These two uncovered and then fixed xlang's worst performance traps.
+`tr -d` and `base64` (encode + `-d` decode) on 1M generated lines. These
+uncovered and then fixed xlang's worst performance traps.
 
 | tool (1M lines) | xlang | GNU | ratio |
 |---|---|---|---|
-| `tr -d aeiou`   | 106 ms | 20 ms | 5.3× |
-| `base64`        |  74 ms | 16 ms | 4.6× |
+| `tr -d aeiou`   |  78 ms |  17 ms | 4.6× |
+| `base64`        |  59 ms |  14 ms | 4.2× |
+| `base64 -d`     | 124 ms |  67 ms | 1.85× |
 
-Both outputs `diff`-identical to GNU.
+All outputs verified byte-identical to GNU (`cmp`). `base64 -d` text round-trip
+(`encode | decode`) is byte-identical over 1M lines.
+
+> Known limitation: `base64 -d` of input that decodes to bytes containing
+> embedded NULs (0x00) is truncated at the first NUL, because xlang strings are
+> NUL-terminated C strings. Text input (the common case) is unaffected.
 
 ## The three fixes (each was a 10–1000× trap)
 

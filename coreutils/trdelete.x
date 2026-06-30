@@ -1,29 +1,32 @@
 module main
 
 // trdelete <chars> — remove all chars in the set from stdin (like `tr -d`).
-// Uses sb_push_char for zero-allocation O(n) output.
+// Builds a 256-entry lookup table (O(1) per char) and emits via sb_push_char.
 fn main(): i32 {
     if argc() < 2 {
         print_str("usage: trdelete <chars>")
         return 1
     }
     let chars: String = argv(1)
+    let table: Vec<i32> = vec_new()
+    let mut k: i32 = 0
+    while k < 256 {
+        table.push(0)
+        k += 1
+    }
+    let cn: i32 = str_len(chars)
+    let mut j: i32 = 0
+    while j < cn {
+        table[str_char_at(chars, j)] = 1
+        j += 1
+    }
     let s: String = read_stdin()
     let n: i32 = str_len(s)
-    let cn: i32 = str_len(chars)
     let mut i: i32 = 0
     sb_new()
     while i < n {
         let c: i32 = str_char_at(s, i)
-        let mut in_set: bool = false
-        let mut j: i32 = 0
-        while j < cn {
-            if str_char_at(chars, j) == c {
-                in_set = true
-            }
-            j += 1
-        }
-        if !in_set {
+        if table[c] == 0 {
             sb_push_char(c)
         }
         i += 1
