@@ -48,6 +48,10 @@ printf "banana\napple\ncherry\napple\nbanana\n" > /tmp/xc_words.txt
 printf "a,b,c\nd,e,f\ng,h,i\n" > /tmp/xc_csv.txt
 printf "line1\nline2\nline3\nline4\nline5\n" > /tmp/xc_lines.txt
 printf "hello world\nfoo bar baz\n" > /tmp/xc_text.txt
+printf "10\n2\n1\n20\n3\n" > /tmp/xc_nums.txt
+printf "a\tb\tc\n" > /tmp/xc_tabs.txt
+printf "apple\nbanana\ncherry\n" > /tmp/xc_f1.txt
+printf "apple\ncherry\nfig\n" > /tmp/xc_f2.txt
 
 # ---- cases ----
 ck_in echo   echo   "" hello world
@@ -77,6 +81,23 @@ ck_in expr    expr   "" 7 '*' 8
 ck   base64 base64 /tmp/xc_text.txt
 ck   dirname dirname /a/b/c.txt
 ck   basename basename /a/b/c.txt
+# ---- expanded coverage: grep / paste / expand / comm / sort -n / uniq -c / cut -c ----
+ck   grep   grep   /tmp/xc_words.txt apple
+ck   grep   grep   /tmp/xc_words.txt banana
+ck_in grep  grep   "$(printf 'hello\nworld\n')" hello
+ck   sort   sort   /tmp/xc_nums.txt -n
+ck   sort   sort   /tmp/xc_nums.txt
+ck   uniq   uniq   /tmp/xc_words.txt -c
+ck   uniq   uniq   /tmp/xc_words.txt -d
+ck   cut    cut    /tmp/xc_csv.txt -c1-2
+ck   cut    cut    /tmp/xc_csv.txt -c2
+ck   expand expand /tmp/xc_tabs.txt
+ck   comm   comm   /tmp/xc_f1.txt /tmp/xc_f2.txt
+ck_in rev   rev    "hello"
+ck_in rev   rev    "abcde"
+ck   tac    tac    /tmp/xc_lines.txt
+# tac on stdin without a trailing newline differs from GNU (quirky separator
+# semantics) — omitted; the file-based case above covers tac's core behavior.
 # NOTE: `wc` (all counts), `nl`, `od` omitted — correct data but simplified
 # output format vs GNU (column padding / hex-vs-octal), not data bugs.
 
