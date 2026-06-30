@@ -117,6 +117,10 @@ cksh "seq 1 3 | tail -1"
 cksh "seq 1 10 | head -5 | tail -2"
 cksh "echo hello | wc -c | cat"
 cksh "head -2 < /tmp/xc_lines.txt"
+# semicolon + assignment + export (no literal $ so the harness bash doesn't expand)
+cksh "echo a; echo b"
+cksh "X=1; Y=2; echo done"
+cksh "export K=v; echo set"
 # NOTE: `wc` (all counts), `nl`, `od` omitted — correct data but simplified
 # output format vs GNU (column padding / hex-vs-octal), not data bugs.
 
