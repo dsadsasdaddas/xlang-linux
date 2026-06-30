@@ -5,7 +5,7 @@
 ## Coreutils
 
 ```
-arch base64 basename cat catb cate cats chmod clear comm cp cut date dirname du echo env expand expr factor false find fold free grep head hostname kill link ln logname longestline ls mkdir mkfifo mv nl nproc od paste printenv ps pwd readlink realpath rev rm rmdir sed seq showall shuf sleep sort split stat tac tail tee test touch tr trdelete true truncate tty uname unexpand uniq uniqc uniqd uptime wc whoami xsh yes 
+arch base64 basename cat catb cate cats chmod clear comm cp cut date dirname du echo env expand expr factor false find fold free grep head hostname kill link ln logname longestline ls mkdir mkfifo mv nl nproc od paste printenv ps pwd readlink realpath rev rm rmdir fmt sed seq showall shuf sleep sort split stat tac tail tee test touch tr trdelete true truncate tty uname unexpand uniq uniqc uniqd uptime wc whoami xsh yes 
 ```
 
 ## Shell

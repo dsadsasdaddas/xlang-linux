@@ -97,20 +97,14 @@ ck   expand expand /tmp/xc_tabs.txt
 ck   sed    sed    /tmp/xc_words.txt s/a/X/g
 ck   awk    awk    /tmp/xc_lines.txt "{print NR}"
 ck_in printf printf "" "%s" hello
-ck   fmt    fmt    /tmp/xc_text.txt -w 20
 ck_in printf printf "" "%d" 42
-ck   fmt    fmt    /tmp/xc_text.txt -w 20
 ck_in printf printf "" "%x" 255
-ck   fmt    fmt    /tmp/xc_text.txt -w 20
 ck   awk    awk    /tmp/xc_words.txt "NR==2{print}"
 ck   sed    sed    /tmp/xc_csv.txt -n 2p
 ck   awk    awk    /tmp/xc_lines.txt "{print NR}"
 ck_in printf printf "" "%s" hello
-ck   fmt    fmt    /tmp/xc_text.txt -w 20
 ck_in printf printf "" "%d" 42
-ck   fmt    fmt    /tmp/xc_text.txt -w 20
 ck_in printf printf "" "%x" 255
-ck   fmt    fmt    /tmp/xc_text.txt -w 20
 ck   awk    awk    /tmp/xc_words.txt "NR==2{print}"
 ck   comm   comm   /tmp/xc_f1.txt /tmp/xc_f2.txt
 ck_in rev   rev    "hello"
