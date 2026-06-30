@@ -1,7 +1,8 @@
 module main
 
 // split <file> <lines> — split a file into N-line chunks (like GNU split -l).
-// Writes chunks to xsplit_0, xsplit_1, etc.
+// Writes chunks to xsplit_0, xsplit_1, etc. Tracks byte offsets and slices
+// each chunk once (O(n) total) instead of accumulating with str_concat.
 fn main(): i32 {
     if argc() < 3 {
         print_str("usage: split <file> <lines-per-chunk>")
@@ -12,29 +13,22 @@ fn main(): i32 {
     let n: i32 = str_len(s)
     let mut fnum: i32 = 0
     let mut lc: i32 = 0
-    let mut chunk: String = ""
-    let mut start: i32 = 0
+    let mut chunk_start: i32 = 0
     let mut i: i32 = 0
     while i < n {
         if str_char_at(s, i) == 10 {
-            chunk = str_concat(chunk, str_slice(s, start, i + 1))
             lc += 1
-            start = i + 1
             if lc >= lpc {
-                write_file(str_concat("xsplit_", int_to_str(fnum)), chunk)
+                write_file(str_concat("xsplit_", int_to_str(fnum)), str_slice(s, chunk_start, i + 1))
                 fnum += 1
                 lc = 0
-                chunk = ""
+                chunk_start = i + 1
             }
         }
         i += 1
     }
-    if start < n {
-        chunk = str_concat(chunk, str_slice(s, start, n))
-        lc += 1
-    }
-    if lc > 0 {
-        write_file(str_concat("xsplit_", int_to_str(fnum)), chunk)
+    if chunk_start < n {
+        write_file(str_concat("xsplit_", int_to_str(fnum)), str_slice(s, chunk_start, n))
         fnum += 1
     }
     print_i32(fnum)
