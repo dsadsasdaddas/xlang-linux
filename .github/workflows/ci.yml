@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  coreutils:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout xlang-linux
+        uses: actions/checkout@v4
+
+      - name: Clone xlang compiler
+        run: git clone --depth 1 https://github.com/dsadsasdaddas/xlang /tmp/xlang
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build xlangc
+        run: cargo build --release
+        working-directory: /tmp/xlang
+
+      - name: Compile every coreutil (.x -> C -> object)
+        run: |
+          set -e
+          XLANGC=/tmp/xlang/target/release/xlangc
+          mkdir -p build
+          pass=0
+          for f in coreutils/*.x; do
+            stem=$(basename "$f" .x)
+            "$XLANGC" c "$f"
+            cc -O2 -c "build/$stem.c" -o "build/$stem.o"
+            pass=$((pass + 1))
+          done
+          echo "::notice::compiled $pass coreutils (.x -> C -> object) OK"
+
+      - name: Smoke-test coreutils (correctness regression)
+        run: |
+          set -e
+          XLANGC=/tmp/xlang/target/release/xlangc
+          check() {
+            local name="$1" expected="$2"; shift 2
+            local got
+            got=$("$XLANGC" run "coreutils/$name.x" "$@")
+            if [ "$got" = "$expected" ]; then
+              echo "PASS $name -> '$got'"
+            else
+              echo "::error::$name: expected '$expected' got '$got'"
+              exit 1
+            fi
+          }
+          check echo   "hello world"  hello world
+          check seq    "$(seq 1 5)"  1 5
+          check basename "foo.txt"    /a/b/foo.txt
+          check dirname  "/a/b"       /a/b/foo.txt
+          echo "::notice::coreutils smoke tests passed"
