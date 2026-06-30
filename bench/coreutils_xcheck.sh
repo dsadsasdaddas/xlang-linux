@@ -122,6 +122,9 @@ cksh "for x in a b c; do echo iter; done"
 cksh "echo a; echo b"
 cksh "X=1; Y=2; echo done"
 cksh "export K=v; echo set"
+cksh "if true; then echo yes; fi"
+cksh "if false; then echo yes; fi"
+cksh "while false; do echo x; done"
 # NOTE: `wc` (all counts), `nl`, `od` omitted — correct data but simplified
 # output format vs GNU (column padding / hex-vs-octal), not data bugs.
 
