@@ -1,22 +1,30 @@
 module main
 
-// uniq [-c] [-d] [file] — drop adjacent duplicate lines (GNU uniq).
+// uniq [-c] [-d] [-u] [file] — drop adjacent duplicate lines (GNU uniq).
 // -c: prefix each line with its count. -d: only print duplicated lines.
-fn emit(line: String, c: i32, want_c: bool, want_d: bool): i32 {
+// -u: only print unique lines (count == 1).
+fn emit(line: String, c: i32, want_c: bool, want_d: bool, want_u: bool): i32 {
     if want_d {
         if c > 1 {
             print_raw(line)
             print_raw("\n")
         }
     } else {
-        if want_c {
-            print_raw(pad_int(c, 7))
-            print_raw(" ")
-            print_raw(line)
-            print_raw("\n")
+        if want_u {
+            if c == 1 {
+                print_raw(line)
+                print_raw("\n")
+            }
         } else {
-            print_raw(line)
-            print_raw("\n")
+            if want_c {
+                print_raw(pad_int(c, 7))
+                print_raw(" ")
+                print_raw(line)
+                print_raw("\n")
+            } else {
+                print_raw(line)
+                print_raw("\n")
+            }
         }
     }
     return 0
@@ -25,6 +33,7 @@ fn emit(line: String, c: i32, want_c: bool, want_d: bool): i32 {
 fn main(): i32 {
     let mut want_c: bool = false
     let mut want_d: bool = false
+    let mut want_u: bool = false
     let mut file: String = ""
     let mut i: i32 = 1
     while i < argc() {
@@ -36,6 +45,7 @@ fn main(): i32 {
                 let c: i32 = str_char_at(a, k)
                 if c == 99 { want_c = true }
                 if c == 100 { want_d = true }
+                if c == 117 { want_u = true }
                 k = k + 1
             }
         } else {
@@ -66,7 +76,7 @@ fn main(): i32 {
                 if str_eq(line, prev) {
                     count = count + 1
                 } else {
-                    emit(prev, count, want_c, want_d)
+                    emit(prev, count, want_c, want_d, want_u)
                     prev = line
                     count = 1
                 }
@@ -76,7 +86,7 @@ fn main(): i32 {
         k = k + 1
     }
     if have_run {
-        emit(prev, count, want_c, want_d)
+        emit(prev, count, want_c, want_d, want_u)
     }
     return 0
 }
