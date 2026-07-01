@@ -10,31 +10,9 @@ module main
 // Combined short flags allowed (e.g. -rin). Substring match (like GNU --fixed-
 // strings). stdin when no file given. Multi-file / -r / -H => "file:line:..." prefix.
 
-fn fold(c: i32): i32 {
-    if c >= 65 {
-        if c <= 90 { return c + 32 }
-    }
-    return c
-}
-
-// Case-insensitive substring.
+// Case-insensitive substring (via str_lower — folds both sides, then exact match).
 fn contains_ci(line: String, pat: String): i32 {
-    let ln: i32 = str_len(line)
-    let pn: i32 = str_len(pat)
-    if pn == 0 { return 1 }
-    let mut i: i32 = 0
-    while i + pn <= ln {
-        let mut j: i32 = 0
-        let mut ok: i32 = 1
-        while j < pn {
-            let a: i32 = fold(str_char_at(line, i + j))
-            let b: i32 = fold(str_char_at(pat, j))
-            if a != b { ok = 0 }
-            if ok == 0 { j = pn } else { j = j + 1 }
-        }
-        if ok == 1 { return 1 }
-        i = i + 1
-    }
+    if str_contains(str_lower(line), str_lower(pat)) { return 1 }
     return 0
 }
 
