@@ -1,7 +1,8 @@
 module main
 
-// sort [-r] [-n] [file] — sort lines lexicographically (default), numeric (-n),
-// and/or reverse (-r). GNU-compatible flags.
+// sort [-r] [-n] [-u] [file] — sort lines lexicographically (default), numeric
+// (-n), reverse (-r), and/or unique (-u, suppress duplicate lines).
+// GNU-compatible flags.
 // Bottom-up merge sort: O(n log n) guaranteed, STABLE (matches GNU — equal keys
 // keep input order), and iterative (no recursion → no stack overflow).
 
@@ -92,6 +93,7 @@ fn merge_sort(lines: Vec<String>, tmp: Vec<String>, count: i32, reverse: bool, n
 fn main(): i32 {
     let mut reverse: bool = false
     let mut numeric: bool = false
+    let mut unique: bool = false
     let mut file: String = ""
     let mut i: i32 = 1
     while i < argc() {
@@ -106,6 +108,9 @@ fn main(): i32 {
                 }
                 if c == 110 {
                     numeric = true
+                }
+                if c == 117 {
+                    unique = true
                 }
                 k = k + 1
             }
@@ -146,6 +151,14 @@ fn main(): i32 {
     }
     let mut j: i32 = 0
     while j < count {
+        if unique {
+            if j > 0 {
+                if str_eq(lines[j], lines[j - 1]) {
+                    j = j + 1
+                    continue
+                }
+            }
+        }
         print_raw(lines[j])
         print_raw("\n")
         j = j + 1
