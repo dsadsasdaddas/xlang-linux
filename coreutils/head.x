@@ -88,7 +88,9 @@ fn main(): i32 {
     }
     let mut p: i32 = 0
     while p < nf {
-        if p > 0 { print_raw("\n") }
+        if p > 0 {
+            if show_header == 1 { print_raw("\n") }
+        }
         if show_header == 1 {
             print_raw("==> ")
             print_raw(files[p])
