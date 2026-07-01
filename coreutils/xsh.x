@@ -526,6 +526,92 @@ fn run_for(c: String): i32 {
 }
 
 // if COND; then BODY; fi  (single-line). Runs BODY iff COND exits 0.
+// Wildcard match for case patterns: '*' = any run, '?' = one char.
+fn glob_match(name: String, pat: String): i32 {
+    let nn: i32 = str_len(name)
+    let pn: i32 = str_len(pat)
+    let mut ni: i32 = 0
+    let mut pi: i32 = 0
+    let mut star: i32 = -1
+    let mut nstar: i32 = 0
+    while ni < nn {
+        let mut mc: i32 = 0
+        if pi < pn {
+            let pc: i32 = str_char_at(pat, pi)
+            let nc: i32 = str_char_at(name, ni)
+            if pc == nc { mc = 1 }
+            if pc == 63 { mc = 1 }
+        }
+        if mc == 1 {
+            ni = ni + 1
+            pi = pi + 1
+        } else {
+            let mut isstar: i32 = 0
+            if pi < pn {
+                if str_char_at(pat, pi) == 42 { isstar = 1 }
+            }
+            if isstar == 1 {
+                star = pi
+                nstar = ni
+                pi = pi + 1
+            } else {
+                if star >= 0 {
+                    pi = star + 1
+                    nstar = nstar + 1
+                    ni = nstar
+                } else {
+                    return 0
+                }
+            }
+        }
+    }
+    let mut ok2: i32 = 1
+    while pi < pn {
+        if str_char_at(pat, pi) == 42 { pi = pi + 1 } else { ok2 = 0 }
+        if ok2 == 0 { pi = pn }
+    }
+    if ok2 == 1 { return 1 }
+    return 0
+}
+
+// case WORD in pat1) body1 ;; pat2) body2 ;; *) default ;; esac
+// Expand WORD, then run the body of the first pattern (wildcard) it matches.
+fn run_case(c: String): i32 {
+    let inpos: i32 = str_find(c, " in ")
+    if inpos < 0 { return 1 }
+    let word: String = trim(expand_vars(str_slice(c, 5, inpos)))
+    let rest0: String = str_slice(c, inpos + 4, str_len(c))
+    let esacpos: i32 = str_find(rest0, "esac")
+    if esacpos < 0 { return 1 }
+    let rest: String = str_slice(rest0, 0, esacpos)
+    let rlen: i32 = str_len(rest)
+    let mut pos: i32 = 0
+    while pos < rlen {
+        let tail: String = str_slice(rest, pos, rlen)
+        let segend: i32 = str_find(tail, ";;")
+        let mut seg: String = ""
+        if segend < 0 {
+            seg = trim(tail)
+            pos = rlen
+        } else {
+            seg = trim(str_slice(rest, pos, pos + segend))
+            pos = pos + segend + 2
+        }
+        if str_len(seg) > 0 {
+            let paren: i32 = str_find(seg, ")")
+            if paren >= 0 {
+                let pat: String = trim(str_slice(seg, 0, paren))
+                let body: String = trim(str_slice(seg, paren + 1, str_len(seg)))
+                if glob_match(word, pat) == 1 {
+                    run_body(body)
+                    return 0
+                }
+            }
+        }
+    }
+    return 0
+}
+
 fn run_if(c: String): i32 {
     let then_pos: i32 = str_find(c, " then ")
     if then_pos < 0 {
@@ -721,6 +807,11 @@ fn run_command(cmd: String): i32 {
             return run_while(cmd)
         }
     }
+    if str_find(cmd, "case ") == 0 {
+        if str_find(cmd, " in ") >= 0 {
+            return run_case(cmd)
+        }
+    }
     // Function definition: name() { body }  → store in env (before expand).
     if str_find(cmd, "() {") >= 0 {
         let paren: i32 = str_find(cmd, "() {")
@@ -890,6 +981,12 @@ fn main(): i32 {
         if str_find(cmd, "while ") == 0 {
             if str_find(cmd, " do ") >= 0 {
                 run_while(cmd)
+                continue
+            }
+        }
+        if str_find(cmd, "case ") == 0 {
+            if str_find(cmd, " in ") >= 0 {
+                run_case(cmd)
                 continue
             }
         }

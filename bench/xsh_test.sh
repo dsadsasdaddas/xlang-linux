@@ -29,6 +29,12 @@ echo "== full-line comments"
 cksh "comment then cmd" $'# this is a comment\necho hi'
 cksh "comment only"     $'# just a comment\necho after'
 
+echo "== case/esac vs bash"
+cksh "case glob prefix"  $'x=apple; case $x in app*) echo starts ;; *) echo other ;; esac'
+cksh "case literal"      $'x=foo; case $x in bar) echo b ;; foo) echo f ;; *) echo o ;; esac'
+cksh "case default"      $'x=zzz; case $x in a) echo a ;; b) echo b ;; *) echo def ;; esac'
+cksh "case wildcard *"   $'y=hi; case $y in *) echo any ;; esac'
+
 echo
 echo "RESULT: pass=$PASS fail=$FAIL"
 [ "$FAIL" = 0 ]
