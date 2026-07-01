@@ -71,7 +71,7 @@ fn main(): i32 {
     while i < an || j < bn {
         if i >= an {
             if suppress2 == 0 {
-                print_raw("\t")
+                if suppress1 == 0 { print_raw("\t") }
                 print_raw(b[j])
                 print_raw("\n")
             }
@@ -94,22 +94,15 @@ fn main(): i32 {
                 } else {
                     if cmp > 0 {
                         if suppress2 == 0 {
-                            print_raw("\t")
+                            if suppress1 == 0 { print_raw("\t") }
                             print_raw(b[j])
                             print_raw("\n")
                         }
                         j = j + 1
                     } else {
                         if suppress3 == 0 {
-                            if suppress1 == 0 {
-                                if suppress2 == 0 {
-                                    print_raw("\t\t")
-                                }
-                            } else {
-                                if suppress2 == 0 {
-                                    print_raw("\t")
-                                }
-                            }
+                            if suppress1 == 0 { print_raw("\t") }
+                            if suppress2 == 0 { print_raw("\t") }
                             print_raw(a[i])
                             print_raw("\n")
                         }
