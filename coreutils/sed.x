@@ -57,7 +57,7 @@ fn substitute(line: String, pat: String, repl: String, global: i32): String {
             i = i + 1
         }
     }
-    return sb_str()
+    return str_slice(sb_str(), 0, str_len(sb_str()))
 }
 
 fn addr_matches(cmd: SedCmd, lineno: i32): bool {
