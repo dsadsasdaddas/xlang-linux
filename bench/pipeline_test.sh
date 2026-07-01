@@ -67,4 +67,10 @@ xcmp "sort -r|head" \
 
 echo
 echo "RESULT: pass=$PASS fail=$FAIL"
+
+# Informational timing: a 100k-line pipeline, xlang vs GNU.
+echo "== timing (100k lines, cat|grep|sort|wc)"
+echo "  xlang:"; time seq 1 100000 | "$BIN/cat" | "$BIN/grep" '5' | "$BIN/sort" -n | "$BIN/wc" -l > /dev/null 2>&1
+echo "  GNU:  "; time seq 1 100000 | /usr/bin/cat | /usr/bin/grep '5' | /usr/bin/sort -n | /usr/bin/wc -l > /dev/null 2>&1
+
 [ "$FAIL" = 0 ]
