@@ -624,23 +624,35 @@ fn run_if(c: String): i32 {
         return 1
     }
     body_full = strip_trailing_semi(str_slice(body_full, 0, fi_pos))
-    // Optional " else " splits the then-body from the else-body.
-    let mut then_body: String = body_full
-    let mut else_body: String = ""
+    // The then-body is everything before the first " elif " or " else ".
+    let elif_pos: i32 = str_find(body_full, " elif ")
     let else_pos: i32 = str_find(body_full, " else ")
+    let mut sep: i32 = -1
+    if elif_pos >= 0 { sep = elif_pos }
     if else_pos >= 0 {
-        then_body = strip_trailing_semi(str_slice(body_full, 0, else_pos))
-        else_body = strip_trailing_semi(str_slice(body_full, else_pos + 6, str_len(body_full)))
+        if sep < 0 { sep = else_pos }
+        if else_pos < sep { sep = else_pos }
+    }
+    let mut then_body: String = body_full
+    if sep >= 0 {
+        then_body = strip_trailing_semi(str_slice(body_full, 0, sep))
     }
     let rc: i32 = run_command(cond)
     if rc == 0 {
         run_body(then_body)
-    } else {
-        if str_len(else_body) > 0 {
-            run_body(else_body)
-        }
+        return 0
     }
-    return 0
+    // cond false: nothing more to do if there's no elif/else tail.
+    if sep < 0 { return 0 }
+    let tail: String = str_slice(body_full, sep, str_len(body_full))
+    if str_starts_with(tail, " else ") == 1 {
+        run_body(strip_trailing_semi(str_slice(tail, 6, str_len(tail))))
+        return 0
+    }
+    // elif: transform " elif C then REST" into "if C then REST fi" and recurse,
+    // so a chain of N elifs unwinds one level per recursion.
+    let inner: String = str_concat(str_concat("if ", str_slice(tail, 6, str_len(tail))), " fi")
+    return run_if(inner)
 }
 
 // while COND; do BODY; done  (single-line). Runs BODY while COND exits 0.
