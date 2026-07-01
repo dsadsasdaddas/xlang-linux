@@ -532,14 +532,27 @@ fn run_if(c: String): i32 {
         return 1
     }
     let cond: String = strip_trailing_semi(str_slice(c, 3, then_pos))
-    let body_full: String = str_slice(c, then_pos + 6, str_len(c))
+    let mut body_full: String = str_slice(c, then_pos + 6, str_len(c))
     let fi_pos: i32 = str_find(body_full, "fi")
     if fi_pos < 0 {
         return 1
     }
-    let body: String = strip_trailing_semi(str_slice(body_full, 0, fi_pos))
-    if run_command(cond) == 0 {
-        run_body(body)
+    body_full = strip_trailing_semi(str_slice(body_full, 0, fi_pos))
+    // Optional " else " splits the then-body from the else-body.
+    let mut then_body: String = body_full
+    let mut else_body: String = ""
+    let else_pos: i32 = str_find(body_full, " else ")
+    if else_pos >= 0 {
+        then_body = strip_trailing_semi(str_slice(body_full, 0, else_pos))
+        else_body = strip_trailing_semi(str_slice(body_full, else_pos + 6, str_len(body_full)))
+    }
+    let rc: i32 = run_command(cond)
+    if rc == 0 {
+        run_body(then_body)
+    } else {
+        if str_len(else_body) > 0 {
+            run_body(else_body)
+        }
     }
     return 0
 }
@@ -842,6 +855,23 @@ fn main(): i32 {
         let cmd: String = read_line()
         if str_len(cmd) == 0 {
             return 0
+        }
+        // Full-line comment: first non-space char is '#'.
+        let mut ci: i32 = 0
+        let mut is_comment: i32 = 0
+        while ci < str_len(cmd) {
+            let ch: i32 = str_char_at(cmd, ci)
+            if ch != 32 {
+                if ch == 35 {
+                    is_comment = 1
+                }
+                ci = str_len(cmd)
+            } else {
+                ci = ci + 1
+            }
+        }
+        if is_comment == 1 {
+            continue
         }
         // Control-flow lines contain ';' as syntax (for/if/while ...; do/then
         // ...; done/fi), so they bypass the ';' command-split.
