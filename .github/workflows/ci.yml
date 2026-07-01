@@ -68,3 +68,9 @@ jobs:
           done
           if [ $fail -eq 0 ]; then echo "::notice::tool functional suites passed"; fi
           exit $fail
+
+      # Pure-xlang userland pipeline integration: run multi-stage pipelines using
+      # ONLY xlang coreutils (from bin/), comparing to GNU equivalents.
+      - name: Pipeline integration test (pure-xlang userland)
+        run: |
+          bash bench/pipeline_test.sh "$PWD/bin"
