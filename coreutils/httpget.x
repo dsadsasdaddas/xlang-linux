@@ -42,17 +42,36 @@ fn parse_url(url: String): Url {
 }
 
 fn main(): i32 {
-    if argc() < 2 {
-        print_str("usage: httpget <url> [-o file]")
-        return 1
-    }
-    let u: Url = parse_url(argv(1))
+    // Parse args: <url> [-o file] [-X method] [-d <data|@file>]
+    let mut url: String = ""
     let mut outfile: String = ""
-    if argc() >= 4 {
-        if str_eq(argv(2), "-o") {
-            outfile = argv(3)
+    let mut method: String = "GET"
+    let mut data: String = ""
+    let mut i: i32 = 1
+    while i < argc() {
+        if str_eq(argv(i), "-o") {
+            if i + 1 < argc() { outfile = argv(i + 1) }
+            i = i + 2
+        } else {
+            if str_eq(argv(i), "-X") {
+                if i + 1 < argc() { method = argv(i + 1) }
+                i = i + 2
+            } else {
+                if str_eq(argv(i), "-d") {
+                    if i + 1 < argc() { data = argv(i + 1) }
+                    i = i + 2
+                } else {
+                    url = argv(i)
+                    i = i + 1
+                }
+            }
         }
     }
+    if str_len(url) == 0 {
+        print_str("usage: httpget <url> [-o file] [-X method] [-d data|@file]")
+        return 1
+    }
+    let u: Url = parse_url(url)
 
     let sock: i32 = tcp_connect(u.host, u.port)
     if sock < 0 {
@@ -60,14 +79,50 @@ fn main(): i32 {
         return 1
     }
 
-    // Build + send the request.
+    // Resolve the request body: a @file (binary, streamed) or a literal string.
+    let mut from_file: i32 = 0
+    let mut datafile: String = ""
+    let mut bodylen: i32 = 0
+    if str_len(data) > 0 {
+        if str_starts_with(data, "@") {
+            from_file = 1
+            datafile = str_slice(data, 1, str_len(data))
+            bodylen = file_size(datafile)
+        } else {
+            bodylen = str_len(data)
+        }
+    }
+
+    // Build + send the request line + headers.
     sb_new()
-    sb_push("GET ")
+    sb_push(method)
+    sb_push(" ")
     sb_push(u.path)
     sb_push(" HTTP/1.1\r\nHost: ")
     sb_push(u.host)
+    if bodylen > 0 {
+        sb_push("\r\nContent-Length: ")
+        sb_push(int_to_str(bodylen))
+    }
     sb_push("\r\nConnection: close\r\nUser-Agent: xlang-httpget/1.0\r\n\r\n")
     send_str(sock, sb_str())
+
+    // Send the request body, binary-safe for @file (read_rbuf + send_rbuf).
+    if from_file == 1 {
+        let ffd: i32 = open_read(datafile)
+        if ffd >= 0 {
+            while true {
+                let fn_: i32 = read_rbuf(ffd)
+                if fn_ == 0 { break }
+                send_rbuf(sock, fn_)
+            }
+            close_fd(ffd)
+        }
+    } else {
+        if bodylen > 0 {
+            send_str(sock, data)
+        }
+    }
 
     // Stream the response body BINARY-SAFE to the output fd (stdout or -o file).
     // Real HTTP headers are tiny (< one 64 KB chunk), so the first recv holds
@@ -92,8 +147,6 @@ fn main(): i32 {
                     write_rbuf(out_fd, hdrlen, body_in_chunk)
                 }
             }
-            // else: headers span past this chunk (pathological >64KB headers);
-            // not handled — real HTTP headers always fit in the first chunk.
         } else {
             write_rbuf(out_fd, 0, n)
         }
