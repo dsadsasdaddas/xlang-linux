@@ -36,7 +36,29 @@ fn main(): i32 {
                 while k <= sn {
                     if k == sn || str_char_at(spec, k) == 44 {
                         if k > st {
-                            fields.push(str_to_int(str_slice(spec, st, k)))
+                            let item: String = str_slice(spec, st, k)
+                            let dash: i32 = str_find(item, "-")
+                            if dash >= 0 {
+                                let lo_str: String = str_slice(item, 0, dash)
+                                let hi_str: String = str_slice(item, dash + 1, str_len(item))
+                                let lo: i32 = 1
+                                let mut lo_val: i32 = lo
+                                if str_len(lo_str) > 0 {
+                                    lo_val = str_to_int(lo_str)
+                                }
+                                if str_len(hi_str) > 0 {
+                                    let hi_val: i32 = str_to_int(hi_str)
+                                    let mut f: i32 = lo_val
+                                    while f <= hi_val {
+                                        fields.push(f)
+                                        f = f + 1
+                                    }
+                                } else {
+                                    fields.push(lo_val)
+                                }
+                            } else {
+                                fields.push(str_to_int(item))
+                            }
                         }
                         st = k + 1
                     }
@@ -65,8 +87,18 @@ fn main(): i32 {
                     cstart = str_to_int(spec)
                     cend = cstart
                 } else {
-                    cstart = str_to_int(str_slice(spec, 0, dash))
-                    cend = str_to_int(str_slice(spec, dash + 1, sn))
+                    let lo_str: String = str_slice(spec, 0, dash)
+                    let hi_str: String = str_slice(spec, dash + 1, sn)
+                    if str_len(lo_str) > 0 {
+                        cstart = str_to_int(lo_str)
+                    } else {
+                        cstart = 1
+                    }
+                    if str_len(hi_str) > 0 {
+                        cend = str_to_int(hi_str)
+                    } else {
+                        cend = 1000000
+                    }
                 }
             }
         } else {
