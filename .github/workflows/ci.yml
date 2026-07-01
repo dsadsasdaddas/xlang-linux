@@ -50,3 +50,21 @@ jobs:
           # (O(n) recursion depth) on all-equal input.
           seq 1 30000 | sed 's/^/x/' | ./bin/sort -n >/dev/null
           echo "::notice::stress (sort -n no-crash on 30k all-equal) passed"
+
+      # Run the per-tool functional suites (bench/*_test.sh). These validate the
+      # upgraded tools (grep -r/-i, find -name, ls -l, wc multi-file, diff, dd,
+      # timeout, xsh if/else/case/comments) by cross-checking vs GNU on Linux —
+      # regression coverage that previously only ran manually on the dev box.
+      - name: Tool functional suites (bench/*_test.sh)
+        run: |
+          XL=/tmp/xlang/target/release/xlangc
+          fail=0
+          for t in grep find ls wc diff dd timeout xsh; do
+            if bash "bench/${t}_test.sh" "$XL" >/tmp/ft.out 2>&1; then
+              echo "PASS  ${t}_test.sh"
+            else
+              echo "FAIL  ${t}_test.sh"; tail -8 /tmp/ft.out; fail=1
+            fi
+          done
+          if [ $fail -eq 0 ]; then echo "::notice::tool functional suites passed"; fi
+          exit $fail
