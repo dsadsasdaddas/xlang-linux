@@ -87,8 +87,18 @@ fn main(): i32 {
                     cstart = str_to_int(spec)
                     cend = cstart
                 } else {
-                    cstart = str_to_int(str_slice(spec, 0, dash))
-                    cend = str_to_int(str_slice(spec, dash + 1, sn))
+                    let lo_str: String = str_slice(spec, 0, dash)
+                    let hi_str: String = str_slice(spec, dash + 1, sn)
+                    if str_len(lo_str) > 0 {
+                        cstart = str_to_int(lo_str)
+                    } else {
+                        cstart = 1
+                    }
+                    if str_len(hi_str) > 0 {
+                        cend = str_to_int(hi_str)
+                    } else {
+                        cend = 1000000
+                    }
                 }
             }
         } else {
