@@ -59,7 +59,7 @@ jobs:
         run: |
           XL=/tmp/xlang/target/release/xlangc
           fail=0
-          for t in grep find ls wc diff dd timeout xsh head tail sed cat mkdir mv; do
+          for t in grep find ls wc diff dd timeout xsh head tail sed cat mkdir mv rm; do
             if bash "bench/${t}_test.sh" "$XL" >/tmp/ft.out 2>&1; then
               echo "PASS  ${t}_test.sh"
             else
