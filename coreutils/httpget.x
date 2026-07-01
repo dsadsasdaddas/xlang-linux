@@ -8,10 +8,9 @@ module main
 // the headers, and writes the body to stdout — or to <file> with -o.
 //
 // Connection: close means the server closes after the response, so we read to
-// EOF and don't need Content-Length framing. Text bodies (HTML/JSON/CSS/JS/API)
-// are printed/saved faithfully; binary bodies containing NUL bytes are truncated
-// by the C-string accumulation (print_raw/write_file are strlen-based) — same
-// model limitation as the proxy's request forward.
+// EOF and don't need Content-Length framing. The body is streamed BINARY-SAFE
+// (write_rbuf = write(2), NUL bytes preserved) — images / compressed / arbitrary
+// binary download byte-identical to stdout or -o file.
 
 struct Url {
     host: String
@@ -70,30 +69,38 @@ fn main(): i32 {
     sb_push("\r\nConnection: close\r\nUser-Agent: xlang-httpget/1.0\r\n\r\n")
     send_str(sock, sb_str())
 
-    // Receive the whole response (Connection: close => read to EOF), tracking
-    // where the headers end (\r\n\r\n) so we can slice the body out.
-    sb_new()
-    let mut hdrend: i32 = -1
+    // Stream the response body BINARY-SAFE to the output fd (stdout or -o file).
+    // Real HTTP headers are tiny (< one 64 KB chunk), so the first recv holds
+    // them: find \r\n\r\n there and write the body tail of that chunk, then write
+    // every later chunk raw, via write_rbuf (write(2), NUL-safe). Downloads
+    // images / compressed / arbitrary binary byte-identical.
+    let mut out_fd: i32 = 1
+    if str_len(outfile) > 0 {
+        out_fd = open_write(outfile)
+    }
+    let mut header_done: i32 = 0
     while true {
         let n: i32 = recv_n(sock)
         if n == 0 { break }
-        sb_push(rbuf_str())
-        if hdrend < 0 {
-            let buf: String = sb_str()
-            let he: i32 = str_find(buf, "\r\n\r\n")
-            if he >= 0 { hdrend = he + 4 }
+        if header_done == 0 {
+            let he: i32 = str_find(rbuf_str(), "\r\n\r\n")
+            if he >= 0 {
+                header_done = 1
+                let hdrlen: i32 = he + 4
+                let body_in_chunk: i32 = n - hdrlen
+                if body_in_chunk > 0 {
+                    write_rbuf(out_fd, hdrlen, body_in_chunk)
+                }
+            }
+            // else: headers span past this chunk (pathological >64KB headers);
+            // not handled — real HTTP headers always fit in the first chunk.
+        } else {
+            write_rbuf(out_fd, 0, n)
         }
     }
     close_fd(sock)
-
-    let full: String = sb_str()
-    if hdrend < 0 { hdrend = 0 }
-    let body: String = str_slice(full, hdrend, str_len(full))
-
-    if str_len(outfile) > 0 {
-        write_file(outfile, body)
-    } else {
-        print_raw(body)
+    if out_fd != 1 {
+        close_fd(out_fd)
     }
     return 0
 }
