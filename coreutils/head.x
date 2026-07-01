@@ -1,46 +1,13 @@
 module main
 
-// head [-n N | -N] [file] — first N lines (default 10), GNU-compatible flags.
-// Handles `head -3 f`, `head -n 3 f`, `head -n3 f`, `head f`, `head N f`.
-fn main(): i32 {
-    let mut limit: i32 = 10
-    let mut file: String = ""
-    let mut i: i32 = 1
-    while i < argc() {
-        let a: String = argv(i)
-        let c0: i32 = str_char_at(a, 0)
-        if c0 == 45 {
-            let c1: i32 = str_char_at(a, 1)
-            if c1 == 110 {
-                if str_len(a) > 2 {
-                    limit = str_to_int(str_slice(a, 2, str_len(a)))
-                } else {
-                    i = i + 1
-                    if i < argc() {
-                        limit = str_to_int(argv(i))
-                    }
-                }
-            } else {
-                if c1 >= 48 {
-                    if c1 <= 57 {
-                        limit = str_to_int(str_slice(a, 1, str_len(a)))
-                    }
-                }
-            }
-        } else {
-            if c0 >= 48 {
-                if c0 <= 57 {
-                    limit = str_to_int(a)
-                }
-            } else {
-                file = a
-            }
-        }
-        i = i + 1
-    }
+// head [-n N | -N] [-v] [-q] [file...] — first N lines (default 10). Multiple
+// files get "==> file <==" headers (GNU style); -v always header, -q never.
+
+// Print the first `limit` lines of path ("" = stdin).
+fn head_file(path: String, limit: i32): i32 {
     let mut s: String = ""
-    if str_len(file) > 0 {
-        s = read_file(file)
+    if str_len(path) > 0 {
+        s = read_file(path)
     } else {
         s = read_stdin()
     }
@@ -65,6 +32,72 @@ fn main(): i32 {
             print_raw(str_slice(s, start, n))
             print_raw("\n")
         }
+    }
+    return 0
+}
+
+fn main(): i32 {
+    let mut limit: i32 = 10
+    let mut want_v: i32 = 0
+    let mut want_q: i32 = 0
+    let files: Vec<String> = vec_new()
+    let mut i: i32 = 1
+    while i < argc() {
+        let a: String = argv(i)
+        let c0: i32 = str_char_at(a, 0)
+        if c0 == 45 {
+            let la: i32 = str_len(a)
+            if str_char_at(a, 1) == 110 {
+                if la > 2 {
+                    limit = str_to_int(str_slice(a, 2, la))
+                } else {
+                    i = i + 1
+                    if i < argc() {
+                        limit = str_to_int(argv(i))
+                    }
+                }
+            } else {
+                let mut j: i32 = 1
+                let mut gotnum: i32 = 0
+                while j < la {
+                    let ch: i32 = str_char_at(a, j)
+                    if ch == 118 { want_v = 1 }
+                    if ch == 113 { want_q = 1 }
+                    if ch >= 48 { if ch <= 57 { gotnum = 1 } }
+                    j = j + 1
+                }
+                if gotnum == 1 {
+                    limit = str_to_int(str_slice(a, 1, la))
+                }
+            }
+        } else {
+            files.push(a)
+        }
+        i = i + 1
+    }
+
+    let nf: i32 = vec_len(files)
+    if nf == 0 {
+        head_file("", limit)
+        return 0
+    }
+    let mut show_header: i32 = 0
+    if want_q == 0 {
+        if nf > 1 { show_header = 1 }
+        if want_v == 1 { show_header = 1 }
+    }
+    let mut p: i32 = 0
+    while p < nf {
+        if p > 0 {
+            if show_header == 1 { print_raw("\n") }
+        }
+        if show_header == 1 {
+            print_raw("==> ")
+            print_raw(files[p])
+            print_raw(" <==\n")
+        }
+        head_file(files[p], limit)
+        p = p + 1
     }
     return 0
 }
