@@ -36,6 +36,12 @@ cksh "case default"      'case zzz in a) echo a ;; b) echo b ;; *) echo def ;; e
 cksh "case wildcard *"   'case hi in *) echo any ;; esac'
 cksh "case + var"        $'v=pear\ncase $v in p*) echo p ;; *) echo x ;; esac'
 
+echo "== elif vs bash"
+cksh "elif first"   'if [ 1 -lt 2 ]; then echo one; elif [ 1 -lt 3 ]; then echo two; else echo three; fi'
+cksh "elif second"  'if [ 5 -lt 2 ]; then echo one; elif [ 5 -lt 6 ]; then echo two; else echo three; fi'
+cksh "elif else"    'if [ 9 -lt 2 ]; then echo one; elif [ 9 -lt 3 ]; then echo two; else echo three; fi'
+cksh "elif no else" 'if [ 5 -lt 2 ]; then echo one; elif [ 5 -lt 6 ]; then echo two; fi'
+
 echo
 echo "RESULT: pass=$PASS fail=$FAIL"
 [ "$FAIL" = 0 ]
