@@ -39,6 +39,7 @@ fn main(): i32 {
         print_str("strings: cannot open file")
         return 1
     }
+    sb_new()
     let mut run_start: i32 = -1
     while true {
         let n: i32 = read_rbuf(fd)
