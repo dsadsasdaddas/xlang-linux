@@ -38,10 +38,10 @@ fn main(): i32 {
         s = read_stdin()
     }
     let n: i32 = str_len(s)
-    let mut i: i32 = 0
+    let mut k: i32 = 0
     let mut col: i32 = 0
-    while i < n {
-        let c: i32 = str_char_at(s, i)
+    while k < n {
+        let c: i32 = str_char_at(s, k)
         if c == 9 {
             let spaces: i32 = tabstop - (col % tabstop)
             let mut j: i32 = 0
@@ -58,7 +58,7 @@ fn main(): i32 {
                 col = col + 1
             }
         }
-        i = i + 1
+        k = k + 1
     }
     return 0
 }
