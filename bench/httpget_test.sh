@@ -18,6 +18,7 @@ H=/tmp/xlang_httpget
 ROOT="$(mktemp -d)"
 printf 'hello world\n' > "$ROOT/index.html"
 seq 1 5000 > "$ROOT/big.txt"          # ~48 KB text (multi-recv)
+head -c 8000 /dev/urandom > "$ROOT/bin.blob"   # 8 KB BINARY (has NUL bytes — the old failure case)
 mkdir -p "$ROOT/sub"
 printf 'sub page\n' > "$ROOT/sub/page.html"
 
@@ -38,6 +39,14 @@ check "big size" "$(wc -c < "$ROOT/big.txt")" "$($H http://127.0.0.1:28700/big.t
 echo "== -o save to file"
 $H http://127.0.0.1:28700/index.html -o /tmp/hg_out
 check "-o content" "$(cat "$ROOT/index.html")" "$(cat /tmp/hg_out)"
+
+echo "== BINARY download via -o (8 KB with NUL bytes) byte-identical to source"
+$H http://127.0.0.1:28700/bin.blob -o /tmp/hg_bin
+if cmp -s /tmp/hg_bin "$ROOT/bin.blob"; then echo "  ok   bin.blob -o byte-identical (binary-safe)"; PASS=$((PASS+1)); else echo "  FAIL bin.blob -o differs"; FAIL=$((FAIL+1)); fi
+
+echo "== BINARY download via stdout redirect byte-identical to source"
+$H http://127.0.0.1:28700/bin.blob > /tmp/hg_bin2
+if cmp -s /tmp/hg_bin2 "$ROOT/bin.blob"; then echo "  ok   bin.blob stdout byte-identical"; PASS=$((PASS+1)); else echo "  FAIL bin.blob stdout differs"; FAIL=$((FAIL+1)); fi
 
 echo "== host without port (defaults to 80) — URL parses, connect fails gracefully"
 out=$($H http://127.0.0.1/notreal 2>&1; echo "exit=$?")
