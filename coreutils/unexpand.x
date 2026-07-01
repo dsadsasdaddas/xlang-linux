@@ -1,49 +1,105 @@
 module main
 
-// unexpand [file] — convert runs of spaces at tab stops to tabs (like
-// `unexpand -a`). Complement of expand. stdin if no file.
+// unexpand [-a] [-t N] [file] — convert spaces to tabs (GNU unexpand).
+//   -a   convert ALL runs of 2+ spaces at tab stops (not just leading)
+//   -t N  tab stop width (default 8)
+// Default (no -a): only leading whitespace is converted. stdin if no file.
+
 fn main(): i32 {
+    let mut tabstop: i32 = 8
+    let mut convert_all: i32 = 0
+    let mut file: String = ""
+    let mut i: i32 = 1
+    while i < argc() {
+        let a: String = argv(i)
+        if str_len(a) >= 2 {
+            if str_char_at(a, 0) == 45 {
+                let mut j: i32 = 1
+                while j < str_len(a) {
+                    let c: i32 = str_char_at(a, j)
+                    if c == 97 { convert_all = 1 }
+                    if c == 116 {
+                        if j + 1 < str_len(a) {
+                            tabstop = str_to_int(str_slice(a, j + 1, str_len(a)))
+                            j = str_len(a)
+                        } else {
+                            i = i + 1
+                            if i < argc() { tabstop = str_to_int(argv(i)) }
+                        }
+                    }
+                    j = j + 1
+                }
+                i = i + 1
+            } else {
+                file = a
+                i = i + 1
+            }
+        } else {
+            file = a
+            i = i + 1
+        }
+    }
+    if tabstop < 1 { tabstop = 1 }
     let mut s: String = ""
-    if argc() >= 2 {
-        s = read_file(argv(1))
+    if str_len(file) > 0 {
+        s = read_file(file)
     } else {
         s = read_stdin()
     }
     let n: i32 = str_len(s)
-    let mut i: i32 = 0
+    let mut k: i32 = 0
     let mut col: i32 = 0
-    let mut spaces: i32 = 0
-    while i < n {
-        let c: i32 = str_char_at(s, i)
+    let mut at_line_start: i32 = 1
+    let mut pending_spaces: i32 = 0
+    while k < n {
+        let c: i32 = str_char_at(s, k)
         if c == 32 {
-            spaces += 1
-            col += 1
-            if col % 8 == 0 {
-                if spaces > 0 {
-                    print_raw("\t")
-                    spaces = 0
+            pending_spaces = pending_spaces + 1
+            col = col + 1
+            if col % tabstop == 0 {
+                let mut do_convert: i32 = 0
+                if convert_all == 1 {
+                    do_convert = 1
+                } else {
+                    if at_line_start == 1 {
+                        do_convert = 1
+                    }
+                }
+                if do_convert == 1 {
+                    if pending_spaces >= 2 {
+                        print_raw("\t")
+                    } else {
+                        let mut sp: i32 = 0
+                        while sp < pending_spaces {
+                            print_raw(" ")
+                            sp = sp + 1
+                        }
+                    }
+                    pending_spaces = 0
                 }
             }
         } else {
-            let mut j: i32 = 0
-            while j < spaces {
+            let mut sp: i32 = 0
+            while sp < pending_spaces {
                 print_raw(" ")
-                j += 1
+                sp = sp + 1
             }
-            spaces = 0
-            print_raw(str_slice(s, i, i + 1))
+            pending_spaces = 0
+            print_raw(chr(c))
             if c == 10 {
                 col = 0
+                at_line_start = 1
             } else {
-                col += 1
+                col = col + 1
+                at_line_start = 0
             }
         }
-        i += 1
+        k = k + 1
     }
-    let mut j: i32 = 0
-    while j < spaces {
+    let mut sp: i32 = 0
+    while sp < pending_spaces {
         print_raw(" ")
-        j += 1
+        sp = sp + 1
     }
     return 0
 }
