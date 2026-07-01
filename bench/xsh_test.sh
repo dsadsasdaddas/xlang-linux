@@ -30,10 +30,11 @@ cksh "comment then cmd" $'# this is a comment\necho hi'
 cksh "comment only"     $'# just a comment\necho after'
 
 echo "== case/esac vs bash"
-cksh "case glob prefix"  $'x=apple; case $x in app*) echo starts ;; *) echo other ;; esac'
-cksh "case literal"      $'x=foo; case $x in bar) echo b ;; foo) echo f ;; *) echo o ;; esac'
-cksh "case default"      $'x=zzz; case $x in a) echo a ;; b) echo b ;; *) echo def ;; esac'
-cksh "case wildcard *"   $'y=hi; case $y in *) echo any ;; esac'
+cksh "case glob prefix"  'case apple in app*) echo starts ;; *) echo other ;; esac'
+cksh "case literal"      'case foo in bar) echo b ;; foo) echo f ;; *) echo o ;; esac'
+cksh "case default"      'case zzz in a) echo a ;; b) echo b ;; *) echo def ;; esac'
+cksh "case wildcard *"   'case hi in *) echo any ;; esac'
+cksh "case + var"        $'v=pear\ncase $v in p*) echo p ;; *) echo x ;; esac'
 
 echo
 echo "RESULT: pass=$PASS fail=$FAIL"
