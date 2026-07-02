@@ -20,7 +20,7 @@ cc -O2 -o bin/strsort_bench build/strsort_bench.c
 cc -O2 -o bin/strsort_bench_ref bench/strsort_bench_ref.c
 
 PASS=0; FAIL=0
-echo "== correctness (xlang selection-sort vs C qsort, same strings)"
+echo "== correctness (xlang selection-sort vs C selection-sort, same strings)"
 for n in 100 1000 4000; do
     xl=$(./bin/strsort_bench "$n" 2>/dev/null)
     cf=$(./bin/strsort_bench_ref "$n" 2>/dev/null)
