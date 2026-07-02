@@ -99,3 +99,9 @@ jobs:
       - name: Concat benchmark (`+`-in-loop vs sb_push builder)
         run: |
           bash bench/concat_bench.sh /tmp/xlang/target/release/xlangc
+
+      # String comparison (`< ==`, → strcmp) benchmark: selection sort vs the
+      # same algorithm in C, proving zero codegen overhead.
+      - name: String-sort benchmark (strcmp comparison vs C)
+        run: |
+          bash bench/strsort_bench.sh /tmp/xlang/target/release/xlangc
