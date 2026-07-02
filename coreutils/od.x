@@ -115,7 +115,7 @@ fn main(): i32 {
                         dbuf = str_concat(str_slice("0123456789", d, d + 1), dbuf)
                         dv = dv / 10
                     }
-                    let mut dpad: i32 = 4 - str_len(dbuf)
+                    let mut dpad: i32 = 5 - str_len(dbuf)
                     while dpad > 0 {
                         dbuf = str_concat(" ", dbuf)
                         dpad = dpad - 1
