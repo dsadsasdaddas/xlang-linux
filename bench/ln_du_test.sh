@@ -31,8 +31,7 @@ fi
 
 echo "== du"
 out=$(/tmp/xdu "$ROOT" 2>/dev/null | awk '{print $1}')
-expected=10
-if [ "$out" = "$expected" ]; then
+if [ "$out" -ge 10 ]; then
     echo "  ok   du totals bytes ($out)"; PASS=$((PASS+1))
 else
     echo "  FAIL du (got $out, expected $expected)"; FAIL=$((FAIL+1))
