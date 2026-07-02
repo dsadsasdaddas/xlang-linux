@@ -74,3 +74,9 @@ jobs:
       - name: Pipeline integration test (pure-xlang userland)
         run: |
           bash bench/pipeline_test.sh "$PWD/bin"
+
+      # Comprehensive integration test: realistic multi-tool pipelines (find+grep+wc,
+      # cat+sort+uniq, ls+grep, xargs, sed+tr) on a project tree.
+      - name: Comprehensive integration test (realistic pipelines)
+        run: |
+          bash bench/integration_test.sh "$PWD/bin"
