@@ -93,3 +93,9 @@ jobs:
       - name: Bitcount benchmark (popcount vs hand-written C)
         run: |
           bash bench/bitcount_bench.sh /tmp/xlang/target/release/xlangc
+
+      # String `+` performance contract: `s = s + chunk` in a loop is O(n²)
+      # (fresh alloc per +) vs the sb_push builder at amortized O(n).
+      - name: Concat benchmark (`+`-in-loop vs sb_push builder)
+        run: |
+          bash bench/concat_bench.sh /tmp/xlang/target/release/xlangc
