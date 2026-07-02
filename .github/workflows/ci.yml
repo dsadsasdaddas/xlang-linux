@@ -80,3 +80,10 @@ jobs:
       - name: Comprehensive integration test (realistic pipelines)
         run: |
           bash bench/integration_test.sh "$PWD/bin"
+
+      # Range-for codegen benchmark + cross-repo integration test: a Sieve of
+      # Eratosthenes built with the new `for i in a..b` loops (from xlang main),
+      # checked for correct prime counts and timed against hand-written C.
+      - name: Range-for benchmark (sieve vs hand-written C)
+        run: |
+          bash bench/range_bench.sh /tmp/xlang/target/release/xlangc
