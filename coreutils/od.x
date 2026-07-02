@@ -103,8 +103,8 @@ fn main(): i32 {
         while k < actual_end {
             let b: i32 = str_char_at(s, k)
             if str_eq(out_type, "x1") {
-                print_raw(hex_str(b, 2))
                 print_raw(" ")
+                print_raw(hex_str(b, 2))
             } else {
                 if str_eq(out_type, "d1") {
                     let mut dbuf: String = ""
@@ -115,13 +115,12 @@ fn main(): i32 {
                         dbuf = str_concat(str_slice("0123456789", d, d + 1), dbuf)
                         dv = dv / 10
                     }
-                    let mut dpad: i32 = 3 - str_len(dbuf)
+                    let mut dpad: i32 = 4 - str_len(dbuf)
                     while dpad > 0 {
                         dbuf = str_concat(" ", dbuf)
                         dpad = dpad - 1
                     }
                     print_raw(dbuf)
-                    print_raw(" ")
                 } else {
                     if str_eq(out_type, "c") {
                         if b >= 32 {
@@ -140,8 +139,8 @@ fn main(): i32 {
                         }
                         print_raw(" ")
                     } else {
-                        print_raw(oct_str(b, 3))
                         print_raw(" ")
+                        print_raw(oct_str(b, 3))
                     }
                 }
             }
