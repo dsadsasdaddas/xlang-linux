@@ -105,3 +105,9 @@ jobs:
       - name: String-sort benchmark (strcmp comparison vs C)
         run: |
           bash bench/strsort_bench.sh /tmp/xlang/target/release/xlangc
+
+      # Method-call benchmark: sum length_sq() over N points via `impl` methods,
+      # vs the same as a C free function (what a method mangles to).
+      - name: Method-call benchmark (impl methods vs C)
+        run: |
+          bash bench/method_bench.sh /tmp/xlang/target/release/xlangc
