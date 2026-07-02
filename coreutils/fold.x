@@ -42,7 +42,10 @@ fn main(): i32 {
         } else {
             col = col + 1
             if col >= width {
-                print_raw("\n")
+                let next_is_nl: bool = (k + 1 < n) && (str_char_at(s, k + 1) == 10)
+                if !next_is_nl {
+                    print_raw("\n")
+                }
                 col = 0
             }
         }
