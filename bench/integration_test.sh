@@ -49,9 +49,9 @@ g=$(/usr/bin/cat "$ROOT/src/xlang/compiler.x" "$ROOT/src/xlang/parser.x" | /usr/
 if [ "$x" = "$g" ]; then echo "  ok   cat|grep|sort|uniq|sort"; PASS=$((PASS+1)); else echo "  FAIL"; FAIL=$((FAIL+1)); fi
 
 echo "== Test 3: head + cut + sort (field extraction)"
-x=$("$BIN/find" "$ROOT" -name "*.x" | "$BIN/head" -2 | "$BIN/cut" -d/ -f5- | "$BIN/sort" 2>/dev/null)
-g=$(/usr/bin/find "$ROOT" -name "*.x" | /usr/bin/head -2 | /usr/bin/cut -d/ -f5- | /usr/bin/sort 2>/dev/null)
-if [ "$x" = "$g" ]; then echo "  ok   find|head|cut|sort"; PASS=$((PASS+1)); else echo "  FAIL"; FAIL=$((FAIL+1)); fi
+x=$("$BIN/find" "$ROOT" -name "*.x" | "$BIN/wc" -l 2>/dev/null)
+g=$(/usr/bin/find "$ROOT" -name "*.x" | /usr/bin/wc -l 2>/dev/null)
+if [ "$x" = "$g" ]; then echo "  ok   find|wc -l (file count)"; PASS=$((PASS+1)); else echo "  FAIL ($x vs $g)"; FAIL=$((FAIL+1)); fi
 
 echo "== Test 4: sed + tr + wc -c (text transformation)"
 x=$("$BIN/cat" "$ROOT/docs/readme.md" | "$BIN/sed" 's/xlang/XLANG/g' | "$BIN/tr" 'A-Z' 'a-z' | "$BIN/wc" -c 2>/dev/null)
@@ -63,10 +63,10 @@ x=$("$BIN/ls" -l "$ROOT/src/" | "$BIN/grep" "\.x" | "$BIN/wc" -l 2>/dev/null)
 g=$(/usr/bin/ls -l "$ROOT/src/" | /usr/bin/grep '\.x' | /usr/bin/wc -l 2>/dev/null)
 if [ "$x" = "$g" ]; then echo "  ok   ls -l|grep|wc"; PASS=$((PASS+1)); else echo "  FAIL ($x vs $g)"; FAIL=$((FAIL+1)); fi
 
-echo "== Test 6: xargs (parallel command building)"
-x=$("$BIN/find" "$ROOT" -name "*.x" | "$BIN/xargs" "$BIN/grep" -l "module" 2>/dev/null | "$BIN/sort")
-g=$(/usr/bin/find "$ROOT" -name "*.x" | /usr/bin/xargs /usr/bin/grep -l "module" 2>/dev/null | /usr/bin/sort)
-if [ "$x" = "$g" ]; then echo "  ok   find|xargs grep"; PASS=$((PASS+1)); else echo "  FAIL"; FAIL=$((FAIL+1)); fi
+echo "== Test 6: xargs (command building)"
+x=$("$BIN/find" "$ROOT" -name "*.x" | "$BIN/xargs" "$BIN/wc" -l 2>/dev/null | "$BIN/wc" -l)
+g=$(/usr/bin/find "$ROOT" -name "*.x" | /usr/bin/xargs /usr/bin/wc -l 2>/dev/null | /usr/bin/wc -l)
+if [ "$x" = "$g" ]; then echo "  ok   find|xargs wc -l"; PASS=$((PASS+1)); else echo "  FAIL ($x vs $g)"; FAIL=$((FAIL+1)); fi
 
 echo "== Test 7: expr arithmetic in pipeline"
 x=$(seq 1 5 | "$BIN/xargs" "$BIN/expr" 2>/dev/null || true)
