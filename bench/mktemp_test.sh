@@ -10,17 +10,17 @@ mkdir -p build
 M=/tmp/xmktemp
 
 echo "== mktemp file"
-f=$(/tmp/$M 2>/dev/null)
+f=$("$M" 2>/dev/null)
 if [ -f "$f" ]; then echo "  ok   creates file [$f]"; PASS=$((PASS+1)); else echo "  FAIL file"; FAIL=$((FAIL+1)); fi
 rm -f "$f" 2>/dev/null
 
 echo "== mktemp -d directory"
-d=$(/tmp/$M -d 2>/dev/null)
+d=$("$M" -d 2>/dev/null)
 if [ -d "$d" ]; then echo "  ok   creates dir [$d]"; PASS=$((PASS+1)); else echo "  FAIL dir"; FAIL=$((FAIL+1)); fi
 rmdir "$d" 2>/dev/null
 
 echo "== mktemp template expansion"
-t=$(/tmp/$M /tmp/xlang_test_XXXXXX 2>/dev/null)
+t=$("$M" /tmp/xlang_test_XXXXXX 2>/dev/null)
 if echo "$t" | grep -q '^/tmp/xlang_test_[0-9]\{6\}$'; then
     echo "  ok   template X's replaced [$t]"; PASS=$((PASS+1))
 else
