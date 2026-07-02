@@ -87,3 +87,9 @@ jobs:
       - name: Range-for benchmark (sieve vs hand-written C)
         run: |
           bash bench/range_bench.sh /tmp/xlang/target/release/xlangc
+
+      # Based-literal + bitwise + inclusive-range benchmark: a popcount kernel
+      # dogfooding 0x literals, & / >>, and `..=` loops, timed vs hand-written C.
+      - name: Bitcount benchmark (popcount vs hand-written C)
+        run: |
+          bash bench/bitcount_bench.sh /tmp/xlang/target/release/xlangc
