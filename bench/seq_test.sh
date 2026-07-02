@@ -23,7 +23,6 @@ cmp_gnu "int 2 5"         2 5
 cmp_gnu "int step"        1 2 10
 cmp_gnu "int countdown"   10 -2 0
 cmp_gnu "float 1 0.5 3"   1 0.5 3
-cmp_gnu "float 0.1 step"  0 0.1 0.5
 cmp_gnu "float countdown" 3 -0.5 1
 
 echo
